@@ -21,18 +21,18 @@ Ce projet est une application web simple permettant de calculer le temps de traj
 
 1. Clonez le dépôt sur votre machine locale :
    ```bash
-   git clone https://github.com/votre-nom-utilisateur/calculateur-temps-trajet.git
+   git clone https://github.com/Cyber-Thibaut/calculateur-temps-trajet.git
    ```
 
     Ouvrez le fichier `index.html` dans votre navigateur pour tester l'application.
 
-Configuration
+2. Configuration
 
-    Clé API OpenRouteService : Remplacez la clé API par votre propre clé dans le code JavaScript. Vous pouvez obtenir une clé API gratuite sur OpenRouteService.
+    Clé API OpenRouteService : Remplacez la clé API par votre propre clé dans le code JavaScript. Vous pouvez obtenir une clé API gratuite sur [OpenRouteService](https://openrouteservice.org/).
 
-const apiKey = 'votre_clé_api_ici';
+    ```const apiKey = 'votre_clé_api_ici';```
 
-Utilisation
+3. Utilisation
 
     Cliquez sur la carte pour sélectionner un lieu de départ et un lieu de destination.
     Appuyez sur le bouton "Calculer le temps de trajet" pour obtenir l'itinéraire et le temps de trajet estimé.
@@ -40,7 +40,7 @@ Utilisation
 
 Licence
 
-Ce projet est sous licence MIT. Voir le fichier LICENSE pour plus de détails.
+Ce projet est sous licence. Voir le fichier [LICENSE](https://github.com/Cyber-Thibaut/Calculateur-temps-trajet/tree/main?tab=License-1-ov-file) pour plus de détails.
 Auteur
 
     Thibaut Cellier - Créateur principal
