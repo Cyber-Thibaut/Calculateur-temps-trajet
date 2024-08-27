@@ -38,7 +38,7 @@ Ce projet est une application web simple permettant de calculer le temps de traj
     Appuyez sur le bouton "Calculer le temps de trajet" pour obtenir l'itinéraire et le temps de trajet estimé.
     Le trajet est affiché sur la carte et les détails du temps de trajet sont affichés sous le bouton.
 
-Licence
+## Licence
 
 Ce projet est sous licence. Voir le fichier [LICENSE](https://github.com/Cyber-Thibaut/Calculateur-temps-trajet/tree/main?tab=License-1-ov-file) pour plus de détails.
 Auteur
