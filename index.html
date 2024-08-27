@@ -64,7 +64,7 @@
                 return;
             }
 
-            const apiKey = '5b3ce3597851110001cf6248b28544f0b97a4a56943dac9d23fcdcc0'; // Remplacez par votre clé OpenRouteService
+            const apiKey = 'votre_clé_api_ici';
             const url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${fromLatLng.lng},${fromLatLng.lat}&end=${toLatLng.lng},${toLatLng.lat}`;
 
             fetch(url)
