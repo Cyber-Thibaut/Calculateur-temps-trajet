@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Transport Manager - Gestion de Transports en Commun</title>
+    <meta name="description" content="Gérez les réseaux de transports en commun de la métropole. Inscrivez-vous gratuitement et commencez à exploiter vos premières lignes.">
+    <meta name="keywords" content="transport, manager, jeu, gestion, bus, car, gratuit, entreprise, réseau, simulation, virtuel">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.css" />
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.13.0/css/all.css" integrity="sha384-IIED/eyOkM6ihtOiQsX2zizxFBphgnv1zbe1bKA+njdFzkr6cDNy16jfIKWu4FNH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1E3A5F; /* Bleu marine */
+            color: #FFFFFF;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        label {
+            font-size: 1.25rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            max-width: 500px;
+            padding: 10px;
+            border: 1px solid #FFFFFF;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            background-color: #2D4F78;
+            color: #FFFFFF;
+        }
+
+        button {
+            background-color: #3B82F6; /* Bleu clair */
+            color: #FFFFFF;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.25rem;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2563EB;
+        }
+
+        #map {
+            height: 400px;
+            width: 100%;
+            max-width: 800px;
+            margin-top: 20px;
+            border: 2px solid #FFFFFF;
+            border-radius: 10px;
+        }
+
+        #output {
+            margin-top: 20px;
+            font-size: 1.25rem;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Calculateur de Temps de Trajet</h1>
+
+    <label for="from">Lieu de départ:</label>
+    <input id="from" type="text" placeholder="Cliquez sur la carte pour sélectionner">
+
+    <label for="to">Lieu de destination:</label>
+    <input id="to" type="text" placeholder="Cliquez sur la carte pour sélectionner">
+
+    <button onclick="calculateRoute()">Calculer le temps de trajet</button>
+
+    <div id="output"></div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <script>
+        let map = L.map('map').setView([48.8566, 2.3522], 13); // Centré sur Paris
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+        }).addTo(map);
+
+        let fromMarker, toMarker;
+        let fromLatLng, toLatLng;
+
+        map.on('click', function (e) {
+            if (!fromLatLng) {
+                fromLatLng = e.latlng;
+                fromMarker = L.marker(fromLatLng).addTo(map);
+                document.getElementById('from').value = `${fromLatLng.lat}, ${fromLatLng.lng}`;
+            } else if (!toLatLng) {
+                toLatLng = e.latlng;
+                toMarker = L.marker(toLatLng).addTo(map);
+                document.getElementById('to').value = `${toLatLng.lat}, ${toLatLng.lng}`;
+            }
+        });
+
+        function calculateRoute() {
+            if (!fromLatLng || !toLatLng) {
+                alert("Veuillez sélectionner à la fois un lieu de départ et un lieu de destination sur la carte.");
+                return;
+            }
+
+            const apiKey = '5b3ce3597851110001cf6248b28544f0b97a4a56943dac9d23fcdcc0'; // Remplacez par votre clé OpenRouteService
+            const url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${fromLatLng.lng},${fromLatLng.lat}&end=${toLatLng.lng},${toLatLng.lat}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const durationInSeconds = data.features[0].properties.summary.duration;
+                    // Conversion du temps en jours, heures, minutes et secondes
+                    const days = Math.floor(durationInSeconds / 86400);
+                    const hours = Math.floor((durationInSeconds % 86400) / 3600);
+                    const minutes = Math.floor((durationInSeconds % 3600) / 60);
+                    const seconds = Math.floor(durationInSeconds % 60);
+
+                    // Affichage du temps formaté
+                    let formattedDuration = '';
+
+                    if (days > 0) {
+                        formattedDuration += `${days} jour${days > 1 ? 's' : ''}, `;
+                    }
+                    formattedDuration += `${hours.toString().padStart(2, '0')}h `;
+                    formattedDuration += `${minutes.toString().padStart(2, '0')}m `;
+                    formattedDuration += `${seconds.toString().padStart(2, '0')}s`;
+
+                    document.getElementById('output').innerHTML = `
+                        <p>Durée du trajet: ${formattedDuration}</p>
+                    `;
+
+                    const route = data.features[0].geometry;
+                    const coordinates = route.coordinates.map(coord => [coord[1], coord[0]]);
+                    L.polyline(coordinates, { color: 'blue' }).addTo(map);
+                })
+                .catch(error => {
+                    document.getElementById('output').innerHTML = `Erreur: ${error}`;
+                });
+        }
+    </script>
+</body>
+
+</html>
