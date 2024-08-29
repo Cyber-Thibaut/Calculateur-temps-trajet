@@ -3,73 +3,64 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Calculateur de Temps de Trajet</title>
+    <title>EcoTrajet</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 
-<body class="bg-blue-900 text-white min-h-screen flex flex-col items-center justify-center p-4">
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col items-center p-4">
+    <h1 class="text-4xl font-bold mb-8 text-center text-green-800">EcoTrajet</h1>
+    <h2 class="text-xl font-bold mb-8 text-center text-blue-800">Calculateur de trajet rapide</h2>
 
-    <h1 class="text-4xl font-bold mb-8 text-center">Calculateur de Temps de Trajet</h1>
-
-    <div class="w-full max-w-lg bg-blue-700 p-6 rounded-lg shadow-lg mt-8">
-        <button onclick="calculateRoute()" class="btn btn-primary bg-blue-500 w-full text-lg">
-            <i class="fas fa-route mr-2"></i>Calculer le temps de trajet
-        </button>
-        <!-- Barre de progression et texte de notification -->
-        <div id="progress-container" class="w-full bg-blue-800 p-4 rounded-lg shadow-lg mt-4 hidden">
-            <p id="progress-text" class="text-lg mb-2">Calcul en cours...</p>
-            <progress id="progress-bar" class="progress progress-info w-full" value="0" max="100"></progress>
+    <div class="w-full max-w-7xl flex flex-col lg:flex-row gap-4">
+        <div class="w-full lg:w-1/3 bg-white p-6 rounded-lg shadow-lg overflow-auto" style="height: 24rem;">
+            <div id="output" class="text-lg"></div>
+            <!-- Barre de progression et texte de notification -->
+            <div id="progress-container" class="w-full bg-gray-100 p-4 rounded-lg shadow-lg mt-4 hidden">
+                <p id="progress-text" class="text-lg mb-2">Calcul en cours...</p>
+                <progress id="progress-bar" class="progress progress-info w-full" value="0" max="100"></progress>
+            </div>
         </div>
-        <div id="output" class="text-lg mt-4"></div>
+
+        <div id="map" class="w-full lg:w-2/3 h-96 rounded-lg shadow-lg"></div>
     </div>
 
-    <div id="map" class="w-full max-w-4xl h-96 mt-8 rounded-lg shadow-lg"></div>
+    <button onclick="calculateRoute()" class="btn btn-primary w-full lg:w-auto mt-4 text-lg">
+        <i class="fas fa-route mr-2"></i>Calculer le temps de trajet
+    </button>
 
-    <div class="collapse w-full max-w-4xl bg-blue-700 rounded-lg shadow-lg mt-8">
+    <div class="collapse w-full max-w-7xl bg-blue-100 rounded-lg shadow-lg mt-8 cursor-pointer">
         <input type="checkbox" class="peer" />
-        <div class="collapse-title text-2xl font-semibold text-white bg-blue-600 peer-checked:bg-blue-800">
-            Guide d'Utilisation
+        <div class="collapse-title text-2xl font-semibold text-gray-800 bg-blue-300 peer-checked:bg-blue-400">
+            <i class="fas fa-info-circle mr-2"></i> Guide d'Utilisation
         </div>
-        <div class="collapse-content text-white bg-blue-700">
+        <div class="collapse-content bg-blue-50 p-4 text-gray-700">
             <h3 class="text-xl font-semibold mt-4">Étape 1 : Sélectionner les lieux</h3>
-            <p><strong>Départ :</strong> Cliquez sur la carte à l'endroit où vous souhaitez commencer votre trajet. Un
-                marqueur sera placé à cet endroit.</p>
-            <p><strong>Destination :</strong> Cliquez ensuite sur la carte à l'endroit où vous souhaitez vous rendre. Un
-                autre marqueur sera placé à cet endroit.</p>
+            <p><strong>Départ :</strong> Cliquez sur la carte à l'endroit où vous souhaitez commencer votre trajet. Un marqueur sera placé à cet endroit.</p>
+            <p><strong>Destination :</strong> Cliquez ensuite sur la carte à l'endroit où vous souhaitez vous rendre. Un autre marqueur sera placé à cet endroit.</p>
 
             <h3 class="text-xl font-semibold mt-4">Étape 2 : Calculer le trajet</h3>
-            <p><strong>Calculer le temps de trajet :</strong> Cliquez sur le bouton <strong>"Calculer le temps de
-                    trajet"</strong> pour commencer le calcul de l'itinéraire. Une barre de progression apparaîtra pour
-                indiquer que le calcul est en cours.</p>
+            <p><strong>Calculer le temps de trajet :</strong> Cliquez sur le bouton <strong>"Calculer le temps de trajet"</strong> pour commencer le calcul de l'itinéraire. Une barre de progression apparaîtra pour indiquer que le calcul est en cours.</p>
 
             <h3 class="text-xl font-semibold mt-4">Étape 3 : Affichage des résultats</h3>
-            <p><strong>Informations sur le trajet :</strong> Une fois le calcul terminé, le temps de trajet estimé et la
-                distance seront affichés sous la barre de progression. Vous trouverez également un résumé détaillé de
-                l'itinéraire, avec des instructions étape par étape.</p>
-            <p><strong>Visualisation sur la carte :</strong> L'itinéraire sera tracé en bleu sur la carte pour vous
-                aider à visualiser le chemin à suivre.</p>
-            <p><strong>Réinitialisation :</strong> Les champs de saisie et les marqueurs seront automatiquement
-                réinitialisés après chaque calcul pour vous permettre de planifier un nouveau trajet facilement.</p>
+            <p><strong>Informations sur le trajet :</strong> Une fois le calcul terminé, le temps de trajet estimé et la distance seront affichés à gauche de la carte. Vous trouverez également un résumé détaillé de l'itinéraire, avec des instructions étape par étape.</p>
+            <p><strong>Visualisation sur la carte :</strong> L'itinéraire sera tracé en bleu sur la carte pour vous aider à visualiser le chemin à suivre.</p>
+            <p><strong>Réinitialisation :</strong> Les champs de saisie et les marqueurs seront automatiquement réinitialisés après chaque calcul pour vous permettre de planifier un nouveau trajet facilement.</p>
 
             <h3 class="text-xl font-semibold mt-4">Conseils</h3>
-            <p><strong>Assurez-vous de sélectionner à la fois un lieu de départ et un lieu de destination avant de
-                    cliquer sur le bouton pour calculer le trajet.</strong></p>
-            <p><strong>Si une adresse ne peut pas être déterminée, les coordonnées GPS seront utilisées comme
-                    alternative.</strong></p>
-            <p>En cas d'affichage de l'erreur <strong>"TypeError: data.routes is undefined"</strong>, essayez sur une
-                plus courte distance.</p>
-            <p>Si vous avez des questions ou rencontrez des problèmes, n'hésitez pas à nous contacter. Bonne utilisation
-                !</p>
+            <p><strong>Assurez-vous de sélectionner à la fois un lieu de départ et un lieu de destination avant de cliquer sur le bouton pour calculer le trajet.</strong></p>
+            <p><strong>Si une adresse ne peut pas être déterminée, les coordonnées GPS seront utilisées comme alternative.</strong></p>
+            <p>En cas d'affichage de l'erreur <strong>"TypeError: data.routes is undefined"</strong>, essayez sur une plus courte distance.</p>
+            <p>Si vous avez des questions ou rencontrez des problèmes, n'hésitez pas à nous contacter. Bonne utilisation !</p>
         </div>
     </div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
     <script>
-        let map = L.map('map').setView([45.783329, 3.08333], 13); // Centré sur Modane
+        let map = L.map('map').setView([45.2009, 6.6634], 13); // Centré sur Modane
         let fromMarker, toMarker, routeLine;
         let fromLatLng = null;
         let toLatLng = null;
@@ -168,13 +159,18 @@
                             formattedDuration += `${minutes.toString().padStart(2, '0')}m `;
                             formattedDuration += `${seconds.toString().padStart(2, '0')}s`;
 
+                            const CO2_per_km_car = 120; // en grammes de CO2 par km pour une voiture lambda
+                            const CO2_per_km_train = 6; // en grammes de CO2 par km pour un train électrique
+                            const CO2_car_total = (distanceInKm * CO2_per_km_car / 1000).toFixed(2); // en kg
+                            const CO2_train_total = (distanceInKm * CO2_per_km_train / 1000).toFixed(2); // en kg
+
                             let directions = `
-                                <div tabindex="0" class="collapse collapse-arrow border border-base-300 bg-blue-200 rounded-box mt-4">
+                                <div tabindex="0" class="collapse collapse-arrow border border-base-300 bg-gray-200 rounded-box mt-4">
                                     <input type="checkbox" class="peer" />
-                                    <div class="collapse-title text-lg font-medium bg-blue-600 text-white peer-checked:bg-blue-700 peer-checked:text-white">
+                                    <div class="collapse-title text-lg font-medium bg-gray-300 text-black peer-checked:bg-gray-400">
                                         Itinéraire de ${addressfrom} à ${addressto}
                                     </div>
-                                    <div class="collapse-content bg-gray-200 text-black">
+                                    <div class="collapse-content bg-gray-100 text-black">
                                         <ol class="list-decimal pl-4">
                             `;
                             data.routes[0].segments[0].steps.forEach((step) => {
@@ -182,13 +178,18 @@
                             });
                             directions += `
                                         </ol>
+                                        <p class="mt-4"><strong>Taxe carbone:</strong></p>
+                                        <ul class="list-disc pl-4">
+                                            <li>Voiture : ${CO2_car_total} kg de CO2</li>
+                                            <li>Train électrique : ${CO2_train_total} kg de CO2</li>
+                                        </ul>
                                     </div>
                                 </div>
                             `;
 
                             document.getElementById('output').innerHTML = `
-                                <p>Durée du trajet: ${formattedDuration}</p>
-                                <p>Distance: ${distanceInKm} km</p>
+                                <p><strong>Durée du trajet:</strong> ${formattedDuration}</p>
+                                <p><strong>Distance:</strong> ${distanceInKm} km</p>
                                 ${directions}
                             `;
 
