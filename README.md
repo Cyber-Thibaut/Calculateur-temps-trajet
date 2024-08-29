@@ -1,4 +1,4 @@
-# Calculateur de Temps de Trajet
+# EcoTrajet - Calculateur de trajet écologique
 
 Ce projet est une application web simple permettant de calculer le temps de trajet entre deux points en utilisant l'API OpenRouteService et la bibliothèque Leaflet pour l'affichage de la carte.
 
