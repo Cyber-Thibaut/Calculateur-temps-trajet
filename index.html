@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>EcoTrajet</title>
+    <title>Calculateur de Temps de Trajet</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -11,20 +11,22 @@
 </head>
 
 <body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col items-center p-4">
-    <h1 class="text-4xl font-bold mb-8 text-center text-green-800">EcoTrajet</h1>
-    <h2 class="text-xl font-bold mb-8 text-center text-blue-800">Calculateur de trajet rapide</h2>
+
+    <h1 class="text-4xl font-bold mb-8 text-center text-blue-800">Calculateur de Temps de Trajet</h1>
 
     <div class="w-full max-w-7xl flex flex-col lg:flex-row gap-4">
-        <div class="w-full lg:w-1/3 bg-white p-6 rounded-lg shadow-lg overflow-auto" style="height: 24rem;">
-            <div id="output" class="text-lg"></div>
-            <!-- Barre de progression et texte de notification -->
-            <div id="progress-container" class="w-full bg-gray-100 p-4 rounded-lg shadow-lg mt-4 hidden">
-                <p id="progress-text" class="text-lg mb-2">Calcul en cours...</p>
-                <progress id="progress-bar" class="progress progress-info w-full" value="0" max="100"></progress>
-            </div>
+        <div class="w-full lg:w-1/3 bg-white p-6 rounded-lg shadow-lg overflow-auto" style="max-height: 24rem;">
+            <div id="output" class="text-lg space-y-2"></div>
         </div>
 
         <div id="map" class="w-full lg:w-2/3 h-96 rounded-lg shadow-lg"></div>
+    </div>
+
+    <div class="w-full max-w-7xl bg-white p-6 rounded-lg shadow-lg mt-4">
+        <p id="duration" class="text-lg font-semibold">Durée du trajet: --</p>
+        <p id="distance" class="text-lg font-semibold">Distance: --</p>
+        <p id="co2-car" class="text-lg">Taxe carbone (Voiture): -- kg de CO2</p>
+        <p id="co2-train" class="text-lg">Taxe carbone (Train électrique): -- kg de CO2</p>
     </div>
 
     <button onclick="calculateRoute()" class="btn btn-primary w-full lg:w-auto mt-4 text-lg">
@@ -57,10 +59,18 @@
         </div>
     </div>
 
+    <!-- Modal for Loading -->
+    <div id="loadingModal" class="modal fixed inset-0 items-center justify-center bg-gray-900 bg-opacity-50 hidden">
+        <div class="modal-box">
+            <h3 class="text-lg font-bold">Calcul en cours...</h3>
+            <progress id="progress-bar" class="progress progress-info w-full mt-4" value="0" max="100"></progress>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
     <script>
-        let map = L.map('map').setView([45.2009, 6.6634], 13); // Centré sur Modane
+        let map = L.map('map').setView([45.783329, 3.08333], 13); // Centré sur Modane
         let fromMarker, toMarker, routeLine;
         let fromLatLng = null;
         let toLatLng = null;
@@ -79,6 +89,14 @@
             }
         });
 
+        function showModal() {
+            document.getElementById('loadingModal').classList.remove('hidden');
+        }
+
+        function hideModal() {
+            document.getElementById('loadingModal').classList.add('hidden');
+        }
+
         function updateProgressBar(value, max) {
             const progressBar = document.getElementById('progress-bar');
             progressBar.value = value;
@@ -91,8 +109,7 @@
                 return;
             }
 
-            document.getElementById('progress-container').classList.remove('hidden');
-            document.getElementById('progress-text').textContent = 'Calcul en cours...';
+            showModal();
 
             const apiKey = '5b3ce3597851110001cf6248b28544f0b97a4a56943dac9d23fcdcc0';
             const url = "https://api.openrouteservice.org/v2/directions/driving-car";
@@ -106,8 +123,8 @@
             });
 
             const steps = [
-                { name: 'Récupération de l\'adresse de départ', url: `https://api-adresse.data.gouv.fr/reverse/?lon=${fromLatLng.lng}&lat=${fromLatLng.lat}` },
-                { name: 'Récupération de l\'adresse d\'arrivée', url: `https://api-adresse.data.gouv.fr/reverse/?lon=${toLatLng.lng}&lat=${toLatLng.lat}` },
+                { name: 'Récupération des adresses', url: `https://api-adresse.data.gouv.fr/reverse/?lon=${fromLatLng.lng}&lat=${fromLatLng.lat}` },
+                { name: 'Récupération des adresses', url: `https://api-adresse.data.gouv.fr/reverse/?lon=${toLatLng.lng}&lat=${toLatLng.lat}` },
                 { name: 'Calcul de l\'itinéraire', url: url }
             ];
 
@@ -116,12 +133,11 @@
 
             function fetchStep(step) {
                 if (currentStep >= totalSteps) {
-                    document.getElementById('progress-container').classList.add('hidden');
+                    hideModal();
                     return;
                 }
 
                 updateProgressBar(currentStep + 1, totalSteps);
-                document.getElementById('progress-text').textContent = steps[currentStep].name;
 
                 fetch(steps[currentStep].url, {
                     method: currentStep === 2 ? 'POST' : 'GET',
@@ -165,33 +181,28 @@
                             const CO2_train_total = (distanceInKm * CO2_per_km_train / 1000).toFixed(2); // en kg
 
                             let directions = `
-                                <div tabindex="0" class="collapse collapse-arrow border border-base-300 bg-gray-200 rounded-box mt-4">
+                                <div class="collapse collapse-arrow border border-base-300 bg-gray-200 rounded-box mt-4">
                                     <input type="checkbox" class="peer" />
                                     <div class="collapse-title text-lg font-medium bg-gray-300 text-black peer-checked:bg-gray-400">
                                         Itinéraire de ${addressfrom} à ${addressto}
                                     </div>
                                     <div class="collapse-content bg-gray-100 text-black">
-                                        <ol class="list-decimal pl-4">
+                                        <ol class="list-decimal pl-4 space-y-2">
                             `;
                             data.routes[0].segments[0].steps.forEach((step) => {
-                                directions += `<li class="mb-1">${step.instruction} (Distance : ${(step.distance / 1000).toFixed(2)} km)</li>`;
+                                directions += `<li>${step.instruction} (Distance : ${(step.distance / 1000).toFixed(2)} km)</li>`;
                             });
                             directions += `
                                         </ol>
-                                        <p class="mt-4"><strong>Taxe carbone:</strong></p>
-                                        <ul class="list-disc pl-4">
-                                            <li>Voiture : ${CO2_car_total} kg de CO2</li>
-                                            <li>Train électrique : ${CO2_train_total} kg de CO2</li>
-                                        </ul>
                                     </div>
                                 </div>
                             `;
 
-                            document.getElementById('output').innerHTML = `
-                                <p><strong>Durée du trajet:</strong> ${formattedDuration}</p>
-                                <p><strong>Distance:</strong> ${distanceInKm} km</p>
-                                ${directions}
-                            `;
+                            document.getElementById('output').innerHTML = directions;
+                            document.getElementById('duration').textContent = `Durée du trajet: ${formattedDuration}`;
+                            document.getElementById('distance').textContent = `Distance: ${distanceInKm} km`;
+                            document.getElementById('co2-car').textContent = `Taxe carbone (Voiture): ${CO2_car_total} kg de CO2`;
+                            document.getElementById('co2-train').textContent = `Taxe carbone (Train électrique): ${CO2_train_total} kg de CO2`;
 
                             const urlroute = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${fromLatLng.lng},${fromLatLng.lat}&end=${toLatLng.lng},${toLatLng.lat}`;
                             fetch(urlroute)
@@ -207,16 +218,14 @@
                                     map.removeLayer(toMarker);
                                     fromLatLng = null;
                                     toLatLng = null;
-                                    document.getElementById('from').value = '';
-                                    document.getElementById('to').value = '';
                                 });
 
-                            document.getElementById('progress-container').classList.add('hidden');
+                            hideModal();
                         }
                     })
                     .catch(error => {
                         document.getElementById('output').innerHTML = `Erreur lors de la récupération des données : ${error}`;
-                        document.getElementById('progress-container').classList.add('hidden');
+                        hideModal();
                     });
             }
 
