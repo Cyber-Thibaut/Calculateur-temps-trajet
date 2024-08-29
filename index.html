@@ -15,7 +15,7 @@
     <h1 class="text-4xl font-bold mb-8 text-center">Calculateur de Temps de Trajet</h1>
 
     <div class="w-full max-w-lg bg-blue-700 p-6 rounded-lg shadow-lg mt-8">
-        <button onclick="calculateRoute()" class="btn btn-primary w-full text-lg">
+        <button onclick="calculateRoute()" class="btn btn-primary bg-blue-500 w-full text-lg">
             <i class="fas fa-route mr-2"></i>Calculer le temps de trajet
         </button>
         <!-- Barre de progression et texte de notification -->
@@ -35,22 +35,34 @@
         </div>
         <div class="collapse-content text-white bg-blue-700">
             <h3 class="text-xl font-semibold mt-4">Étape 1 : Sélectionner les lieux</h3>
-            <p><strong>Départ :</strong> Cliquez sur la carte à l'endroit où vous souhaitez commencer votre trajet. Un marqueur sera placé à cet endroit.</p>
-            <p><strong>Destination :</strong> Cliquez ensuite sur la carte à l'endroit où vous souhaitez vous rendre. Un autre marqueur sera placé à cet endroit.</p>
+            <p><strong>Départ :</strong> Cliquez sur la carte à l'endroit où vous souhaitez commencer votre trajet. Un
+                marqueur sera placé à cet endroit.</p>
+            <p><strong>Destination :</strong> Cliquez ensuite sur la carte à l'endroit où vous souhaitez vous rendre. Un
+                autre marqueur sera placé à cet endroit.</p>
 
             <h3 class="text-xl font-semibold mt-4">Étape 2 : Calculer le trajet</h3>
-            <p><strong>Calculer le temps de trajet :</strong> Cliquez sur le bouton <strong>"Calculer le temps de trajet"</strong> pour commencer le calcul de l'itinéraire. Une barre de progression apparaîtra pour indiquer que le calcul est en cours.</p>
+            <p><strong>Calculer le temps de trajet :</strong> Cliquez sur le bouton <strong>"Calculer le temps de
+                    trajet"</strong> pour commencer le calcul de l'itinéraire. Une barre de progression apparaîtra pour
+                indiquer que le calcul est en cours.</p>
 
             <h3 class="text-xl font-semibold mt-4">Étape 3 : Affichage des résultats</h3>
-            <p><strong>Informations sur le trajet :</strong> Une fois le calcul terminé, le temps de trajet estimé et la distance seront affichés sous la barre de progression. Vous trouverez également un résumé détaillé de l'itinéraire, avec des instructions étape par étape.</p>
-            <p><strong>Visualisation sur la carte :</strong> L'itinéraire sera tracé en bleu sur la carte pour vous aider à visualiser le chemin à suivre.</p>
-            <p><strong>Réinitialisation :</strong> Les champs de saisie et les marqueurs seront automatiquement réinitialisés après chaque calcul pour vous permettre de planifier un nouveau trajet facilement.</p>
+            <p><strong>Informations sur le trajet :</strong> Une fois le calcul terminé, le temps de trajet estimé et la
+                distance seront affichés sous la barre de progression. Vous trouverez également un résumé détaillé de
+                l'itinéraire, avec des instructions étape par étape.</p>
+            <p><strong>Visualisation sur la carte :</strong> L'itinéraire sera tracé en bleu sur la carte pour vous
+                aider à visualiser le chemin à suivre.</p>
+            <p><strong>Réinitialisation :</strong> Les champs de saisie et les marqueurs seront automatiquement
+                réinitialisés après chaque calcul pour vous permettre de planifier un nouveau trajet facilement.</p>
 
             <h3 class="text-xl font-semibold mt-4">Conseils</h3>
-            <p><strong>Assurez-vous de sélectionner à la fois un lieu de départ et un lieu de destination avant de cliquer sur le bouton pour calculer le trajet.</strong></p>
-            <p><strong>Si une adresse ne peut pas être déterminée, les coordonnées GPS seront utilisées comme alternative.</strong></p>
-            <p>En cas d'affichage de l'erreur <strong>"TypeError: data.routes is undefined"</strong>, essayez sur une plus courte distance.</p>
-            <p>Si vous avez des questions ou rencontrez des problèmes, n'hésitez pas à nous contacter. Bonne utilisation !</p>
+            <p><strong>Assurez-vous de sélectionner à la fois un lieu de départ et un lieu de destination avant de
+                    cliquer sur le bouton pour calculer le trajet.</strong></p>
+            <p><strong>Si une adresse ne peut pas être déterminée, les coordonnées GPS seront utilisées comme
+                    alternative.</strong></p>
+            <p>En cas d'affichage de l'erreur <strong>"TypeError: data.routes is undefined"</strong>, essayez sur une
+                plus courte distance.</p>
+            <p>Si vous avez des questions ou rencontrez des problèmes, n'hésitez pas à nous contacter. Bonne utilisation
+                !</p>
         </div>
     </div>
 
