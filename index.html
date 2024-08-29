@@ -4,36 +4,55 @@
 <head>
     <meta charset="UTF-8">
     <title>Calculateur de Temps de Trajet</title>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@latest/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.13.0/css/all.css"
-        integrity="sha384-IIED/eyOkM6ihtOiQsX2zizxFBphgnv1zbe1bKA+njdFzkr6cDNy16jfIKWu4FNH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 
-<body class="bg-[#1E3A5F] text-white min-h-screen flex flex-col items-center justify-center p-4">
+<body class="bg-blue-900 text-white min-h-screen flex flex-col items-center justify-center p-4">
 
-    <h1 class="text-4xl font-bold mb-8 text-center">Calculateur de temps de trajet</h1>
+    <h1 class="text-4xl font-bold mb-8 text-center">Calculateur de Temps de Trajet</h1>
 
-    <div class="w-full max-w-lg bg-[#2D4F78] p-8 rounded-lg shadow-lg space-y-6">
-        <div>
-            <label for="from" class="block text-lg font-medium mb-2">Lieu de départ :</label>
-            <input id="from" type="text" placeholder="Cliquez sur la carte pour sélectionner"
-                class="input input-bordered w-full text-black" readonly />
+    <div class="w-full max-w-lg bg-blue-700 p-6 rounded-lg shadow-lg mt-8">
+        <button onclick="calculateRoute()" class="btn btn-primary w-full text-lg">
+            <i class="fas fa-route mr-2"></i>Calculer le temps de trajet
+        </button>
+        <!-- Barre de progression et texte de notification -->
+        <div id="progress-container" class="w-full bg-blue-800 p-4 rounded-lg shadow-lg mt-4 hidden">
+            <p id="progress-text" class="text-lg mb-2">Calcul en cours...</p>
+            <progress id="progress-bar" class="progress progress-info w-full" value="0" max="100"></progress>
         </div>
-
-        <div>
-            <label for="to" class="block text-lg font-medium mb-2">Lieu de destination :</label>
-            <input id="to" type="text" placeholder="Cliquez sur la carte pour sélectionner"
-                class="input input-bordered w-full text-black" readonly />
-        </div>
-
-        <button onclick="calculateRoute()" class="btn btn-primary w-full text-lg">Calculer le temps de trajet</button>
-
         <div id="output" class="text-lg mt-4"></div>
     </div>
 
     <div id="map" class="w-full max-w-4xl h-96 mt-8 rounded-lg shadow-lg"></div>
+
+    <div class="collapse w-full max-w-4xl bg-blue-700 rounded-lg shadow-lg mt-8">
+        <input type="checkbox" class="peer" />
+        <div class="collapse-title text-2xl font-semibold text-white bg-blue-600 peer-checked:bg-blue-800">
+            Guide d'Utilisation
+        </div>
+        <div class="collapse-content text-white bg-blue-700">
+            <h3 class="text-xl font-semibold mt-4">Étape 1 : Sélectionner les lieux</h3>
+            <p><strong>Départ :</strong> Cliquez sur la carte à l'endroit où vous souhaitez commencer votre trajet. Un marqueur sera placé à cet endroit.</p>
+            <p><strong>Destination :</strong> Cliquez ensuite sur la carte à l'endroit où vous souhaitez vous rendre. Un autre marqueur sera placé à cet endroit.</p>
+
+            <h3 class="text-xl font-semibold mt-4">Étape 2 : Calculer le trajet</h3>
+            <p><strong>Calculer le temps de trajet :</strong> Cliquez sur le bouton <strong>"Calculer le temps de trajet"</strong> pour commencer le calcul de l'itinéraire. Une barre de progression apparaîtra pour indiquer que le calcul est en cours.</p>
+
+            <h3 class="text-xl font-semibold mt-4">Étape 3 : Affichage des résultats</h3>
+            <p><strong>Informations sur le trajet :</strong> Une fois le calcul terminé, le temps de trajet estimé et la distance seront affichés sous la barre de progression. Vous trouverez également un résumé détaillé de l'itinéraire, avec des instructions étape par étape.</p>
+            <p><strong>Visualisation sur la carte :</strong> L'itinéraire sera tracé en bleu sur la carte pour vous aider à visualiser le chemin à suivre.</p>
+            <p><strong>Réinitialisation :</strong> Les champs de saisie et les marqueurs seront automatiquement réinitialisés après chaque calcul pour vous permettre de planifier un nouveau trajet facilement.</p>
+
+            <h3 class="text-xl font-semibold mt-4">Conseils</h3>
+            <p><strong>Assurez-vous de sélectionner à la fois un lieu de départ et un lieu de destination avant de cliquer sur le bouton pour calculer le trajet.</strong></p>
+            <p><strong>Si une adresse ne peut pas être déterminée, les coordonnées GPS seront utilisées comme alternative.</strong></p>
+            <p>En cas d'affichage de l'erreur <strong>"TypeError: data.routes is undefined"</strong>, essayez sur une plus courte distance.</p>
+            <p>Si vous avez des questions ou rencontrez des problèmes, n'hésitez pas à nous contacter. Bonne utilisation !</p>
+        </div>
+    </div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
@@ -51,13 +70,17 @@
             if (!fromLatLng) {
                 fromLatLng = e.latlng;
                 fromMarker = L.marker(fromLatLng).addTo(map);
-                document.getElementById('from').value = `${fromLatLng.lat}, ${fromLatLng.lng}`;
             } else if (!toLatLng) {
                 toLatLng = e.latlng;
                 toMarker = L.marker(toLatLng).addTo(map);
-                document.getElementById('to').value = `${toLatLng.lat}, ${toLatLng.lng}`;
             }
         });
+
+        function updateProgressBar(value, max) {
+            const progressBar = document.getElementById('progress-bar');
+            progressBar.value = value;
+            progressBar.max = max;
+        }
 
         function calculateRoute() {
             if (!fromLatLng || !toLatLng) {
@@ -65,7 +88,10 @@
                 return;
             }
 
-            const apiKey = '5b3ce3597851110001cf6248b28544f0b97a4a56943dac9d23fcdcc0'; // Remplacez par votre clé OpenRouteService
+            document.getElementById('progress-container').classList.remove('hidden');
+            document.getElementById('progress-text').textContent = 'Calcul en cours...';
+
+            const apiKey = '5b3ce3597851110001cf6248b28544f0b97a4a56943dac9d23fcdcc0';
             const url = "https://api.openrouteservice.org/v2/directions/driving-car";
 
             const body = JSON.stringify({
@@ -76,91 +102,113 @@
                 language: "fr-fr"
             });
 
-            let request = new XMLHttpRequest();
+            const steps = [
+                { name: 'Récupération des adresses', url: `https://api-adresse.data.gouv.fr/reverse/?lon=${fromLatLng.lng}&lat=${fromLatLng.lat}` },
+                { name: 'Récupération des adresses', url: `https://api-adresse.data.gouv.fr/reverse/?lon=${toLatLng.lng}&lat=${toLatLng.lat}` },
+                { name: 'Calcul de l\'itinéraire', url: url }
+            ];
 
-            request.open('POST', url, true);
-            request.setRequestHeader('Accept', 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8');
-            request.setRequestHeader('Content-Type', 'application/json');
-            request.setRequestHeader('Authorization', apiKey);
+            let currentStep = 0;
+            const totalSteps = steps.length;
 
-            request.onreadystatechange = function () {
-                if (this.readyState === 4 && this.status === 200) {
-                    const data = JSON.parse(this.responseText);
-                    const durationInSeconds = data.routes[0].summary.duration;
-                    const distanceInKm = (data.routes[0].summary.distance / 1000).toFixed(2);
-
-                    // Conversion du temps en jours, heures, minutes et secondes
-                    const days = Math.floor(durationInSeconds / 86400);
-                    const hours = Math.floor((durationInSeconds % 86400) / 3600);
-                    const minutes = Math.floor((durationInSeconds % 3600) / 60);
-                    const seconds = Math.floor(durationInSeconds % 60);
-
-                    // Affichage du temps formaté
-                    let formattedDuration = '';
-                    if (days > 0) {
-                        formattedDuration += `${days} jour${days > 1 ? 's' : ''}, `;
-                    }
-                    formattedDuration += `${hours.toString().padStart(2, '0')}h `;
-                    formattedDuration += `${minutes.toString().padStart(2, '0')}m `;
-                    formattedDuration += `${seconds.toString().padStart(2, '0')}s`;
-
-                    // Affichage des informations de trajet
-                    let directions = `
-                        <div tabindex="0" class="collapse collapse-arrow border border-base-300 bg-base-100 rounded-box">
-                            <input type="checkbox" class="peer" />
-                            <div class="collapse-title text-lg font-medium bg-blue-600 text-white peer-checked:bg-blue-700 peer-checked:text-white">
-                                Itinéraire
-                            </div>
-                            <div class="collapse-content bg-gray-200 text-black">
-                                <ol class="list-decimal pl-4">
-                    `;
-                    data.routes[0].segments[0].steps.forEach((step, index) => {
-                        directions += `<li class="mb-1">${step.instruction} (distance : ${(step.distance/1000).toFixed(2)} km)</li>`;
-                    });
-                    directions += `
-                                </ol>
-                            </div>
-                        </div>
-                    `;
-
-                    document.getElementById('output').innerHTML = `
-                        <p>Durée du trajet: ${formattedDuration}</p>
-                        <p>Distance: ${distanceInKm} km</p>
-                        ${directions}
-                    `;
-
-                    // Tracer le trajet
-                    const apiKey = '5b3ce3597851110001cf6248b28544f0b97a4a56943dac9d23fcdcc0'; // Remplacez par votre clé OpenRouteService
-                    const urlroute = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${fromLatLng.lng},${fromLatLng.lat}&end=${toLatLng.lng},${toLatLng.lat}`;
-                    fetch(urlroute)
-                        .then(response => response.json())
-                        .then(dataroute => {
-                            const route = dataroute.features[0].geometry;
-                            const coordinates = route.coordinates.map(coord => [coord[1], coord[0]]);
-                            if (routeLine) {
-                                map.removeLayer(routeLine);
-                            }
-                            routeLine = L.polyline(coordinates, { color: 'blue' }).addTo(map);
-
-                            // Réinitialiser les champs et les marqueurs
-                            fromLatLng = null;
-                            toLatLng = null;
-                            document.getElementById('from').value = '';
-                            document.getElementById('to').value = '';
-
-                            if (fromMarker) {
-                                map.removeLayer(fromMarker);
-                            }
-                            if (toMarker) {
-                                map.removeLayer(toMarker);
-                            }
-                        }
-                    );
+            function fetchStep(step) {
+                if (currentStep >= totalSteps) {
+                    document.getElementById('progress-container').classList.add('hidden');
+                    return;
                 }
-            };
 
-                request.send(body);
+                updateProgressBar(currentStep + 1, totalSteps);
+                document.getElementById('progress-text').textContent = steps[currentStep].name;
+
+                fetch(steps[currentStep].url, {
+                    method: currentStep === 2 ? 'POST' : 'GET',
+                    headers: currentStep === 2 ? {
+                        'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
+                        'Content-Type': 'application/json',
+                        'Authorization': apiKey
+                    } : {},
+                    body: currentStep === 2 ? body : undefined
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (currentStep === 0) {
+                            addressfrom = data.features.length > 0 ? data.features[0].properties.label : `${fromLatLng.lat}, ${fromLatLng.lng}`;
+                            currentStep++;
+                            fetchStep(steps[currentStep]);
+                        } else if (currentStep === 1) {
+                            addressto = data.features.length > 0 ? data.features[0].properties.label : `${toLatLng.lat}, ${toLatLng.lng}`;
+                            currentStep++;
+                            fetchStep(steps[currentStep]);
+                        } else if (currentStep === 2) {
+                            const durationInSeconds = data.routes[0].summary.duration;
+                            const distanceInKm = (data.routes[0].summary.distance / 1000).toFixed(2);
+
+                            const days = Math.floor(durationInSeconds / 86400);
+                            const hours = Math.floor((durationInSeconds % 86400) / 3600);
+                            const minutes = Math.floor((durationInSeconds % 3600) / 60);
+                            const seconds = Math.floor(durationInSeconds % 60);
+
+                            let formattedDuration = '';
+                            if (days > 0) {
+                                formattedDuration += `${days} jour${days > 1 ? 's' : ''}, `;
+                            }
+                            formattedDuration += `${hours.toString().padStart(2, '0')}h `;
+                            formattedDuration += `${minutes.toString().padStart(2, '0')}m `;
+                            formattedDuration += `${seconds.toString().padStart(2, '0')}s`;
+
+                            let directions = `
+                                <div tabindex="0" class="collapse collapse-arrow border border-base-300 bg-blue-200 rounded-box mt-4">
+                                    <input type="checkbox" class="peer" />
+                                    <div class="collapse-title text-lg font-medium bg-blue-600 text-white peer-checked:bg-blue-700 peer-checked:text-white">
+                                        Itinéraire de ${addressfrom} à ${addressto}
+                                    </div>
+                                    <div class="collapse-content bg-gray-200 text-black">
+                                        <ol class="list-decimal pl-4">
+                            `;
+                            data.routes[0].segments[0].steps.forEach((step) => {
+                                directions += `<li class="mb-1">${step.instruction} (Distance : ${(step.distance / 1000).toFixed(2)} km)</li>`;
+                            });
+                            directions += `
+                                        </ol>
+                                    </div>
+                                </div>
+                            `;
+
+                            document.getElementById('output').innerHTML = `
+                                <p>Durée du trajet: ${formattedDuration}</p>
+                                <p>Distance: ${distanceInKm} km</p>
+                                ${directions}
+                            `;
+
+                            const urlroute = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${fromLatLng.lng},${fromLatLng.lat}&end=${toLatLng.lng},${toLatLng.lat}`;
+                            fetch(urlroute)
+                                .then(response => response.json())
+                                .then(dataroute => {
+                                    const route = dataroute.features[0].geometry;
+                                    const coordinates = route.coordinates.map(coord => [coord[1], coord[0]]);
+                                    if (routeLine) {
+                                        map.removeLayer(routeLine);
+                                    }
+                                    routeLine = L.polyline(coordinates, { color: 'blue' }).addTo(map);
+                                    map.removeLayer(fromMarker);
+                                    map.removeLayer(toMarker);
+                                    fromLatLng = null;
+                                    toLatLng = null;
+                                    document.getElementById('from').value = '';
+                                    document.getElementById('to').value = '';
+                                });
+
+                            document.getElementById('progress-container').classList.add('hidden');
+                        }
+                    })
+                    .catch(error => {
+                        document.getElementById('output').innerHTML = `Erreur lors de la récupération des données : ${error}`;
+                        document.getElementById('progress-container').classList.add('hidden');
+                    });
             }
+
+            fetchStep(steps[currentStep]);
+        }
     </script>
 </body>
 
