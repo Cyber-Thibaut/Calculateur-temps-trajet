@@ -19,13 +19,13 @@
         <div>
             <label for="from" class="block text-lg font-medium mb-2">Lieu de départ :</label>
             <input id="from" type="text" placeholder="Cliquez sur la carte pour sélectionner"
-                class="input input-bordered w-full text-black" />
+                class="input input-bordered w-full text-black" readonly />
         </div>
 
         <div>
             <label for="to" class="block text-lg font-medium mb-2">Lieu de destination :</label>
             <input id="to" type="text" placeholder="Cliquez sur la carte pour sélectionner"
-                class="input input-bordered w-full text-black" />
+                class="input input-bordered w-full text-black" readonly />
         </div>
 
         <button onclick="calculateRoute()" class="btn btn-primary w-full text-lg">Calculer le temps de trajet</button>
@@ -40,7 +40,8 @@
     <script>
         let map = L.map('map').setView([45.2009, 6.6634], 13); // Centré sur Modane
         let fromMarker, toMarker, routeLine;
-        let fromLatLng, toLatLng;
+        let fromLatLng = null;
+        let toLatLng = null;
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
@@ -64,24 +65,38 @@
                 return;
             }
 
-            const apiKey = '5b3ce3597851110001cf6248b28544f0b97a4a56943dac9d23fcdcc0';
-            const url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${fromLatLng.lng},${fromLatLng.lat}&end=${toLatLng.lng},${toLatLng.lat}`;
+            const apiKey = '5b3ce3597851110001cf6248b28544f0b97a4a56943dac9d23fcdcc0'; // Remplacez par votre clé OpenRouteService
+            const url = "https://api.openrouteservice.org/v2/directions/driving-car";
 
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    const durationInSeconds = data.features[0].properties.summary.duration;
+            const body = JSON.stringify({
+                coordinates: [
+                    [fromLatLng.lng, fromLatLng.lat],
+                    [toLatLng.lng, toLatLng.lat]
+                ],
+                language: "fr-fr"
+            });
+
+            let request = new XMLHttpRequest();
+
+            request.open('POST', url, true);
+            request.setRequestHeader('Accept', 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8');
+            request.setRequestHeader('Content-Type', 'application/json');
+            request.setRequestHeader('Authorization', apiKey);
+
+            request.onreadystatechange = function () {
+                if (this.readyState === 4 && this.status === 200) {
+                    const data = JSON.parse(this.responseText);
+                    const durationInSeconds = data.routes[0].summary.duration;
+                    const distanceInKm = (data.routes[0].summary.distance / 1000).toFixed(2);
+
                     // Conversion du temps en jours, heures, minutes et secondes
                     const days = Math.floor(durationInSeconds / 86400);
                     const hours = Math.floor((durationInSeconds % 86400) / 3600);
                     const minutes = Math.floor((durationInSeconds % 3600) / 60);
                     const seconds = Math.floor(durationInSeconds % 60);
 
-                    const distance = data.features[0].properties.summary.distance;
-
                     // Affichage du temps formaté
                     let formattedDuration = '';
-
                     if (days > 0) {
                         formattedDuration += `${days} jour${days > 1 ? 's' : ''}, `;
                     }
@@ -89,40 +104,63 @@
                     formattedDuration += `${minutes.toString().padStart(2, '0')}m `;
                     formattedDuration += `${seconds.toString().padStart(2, '0')}s`;
 
-                    const distanceInKm = (data.features[0].properties.summary.distance / 1000).toFixed(2);
+                    // Affichage des informations de trajet
+                    let directions = `
+                        <div tabindex="0" class="collapse collapse-arrow border border-base-300 bg-base-100 rounded-box">
+                            <input type="checkbox" class="peer" />
+                            <div class="collapse-title text-lg font-medium bg-blue-600 text-white peer-checked:bg-blue-700 peer-checked:text-white">
+                                Itinéraire
+                            </div>
+                            <div class="collapse-content bg-gray-200 text-black">
+                                <ol class="list-decimal pl-4">
+                    `;
+                    data.routes[0].segments[0].steps.forEach((step, index) => {
+                        directions += `<li class="mb-1">${step.instruction} (distance : ${(step.distance/1000).toFixed(2)} km)</li>`;
+                    });
+                    directions += `
+                                </ol>
+                            </div>
+                        </div>
+                    `;
 
                     document.getElementById('output').innerHTML = `
                         <p>Durée du trajet: ${formattedDuration}</p>
                         <p>Distance: ${distanceInKm} km</p>
+                        ${directions}
                     `;
 
-
-                    const route = data.features[0].geometry;
-                    const coordinates = route.coordinates.map(coord => [coord[1], coord[0]]);
-
                     // Tracer le trajet
-                    if (routeLine) {
-                        map.removeLayer(routeLine);
-                    }
-                    routeLine = L.polyline(coordinates, { color: 'blue' }).addTo(map);
+                    const apiKey = '5b3ce3597851110001cf6248b28544f0b97a4a56943dac9d23fcdcc0'; // Remplacez par votre clé OpenRouteService
+                    const urlroute = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${fromLatLng.lng},${fromLatLng.lat}&end=${toLatLng.lng},${toLatLng.lat}`;
+                    fetch(urlroute)
+                        .then(response => response.json())
+                        .then(dataroute => {
+                            const route = dataroute.features[0].geometry;
+                            const coordinates = route.coordinates.map(coord => [coord[1], coord[0]]);
+                            if (routeLine) {
+                                map.removeLayer(routeLine);
+                            }
+                            routeLine = L.polyline(coordinates, { color: 'blue' }).addTo(map);
 
-                    // Réinitialiser les champs et les marqueurs
-                    fromLatLng = null;
-                    toLatLng = null;
-                    document.getElementById('from').value = '';
-                    document.getElementById('to').value = '';
+                            // Réinitialiser les champs et les marqueurs
+                            fromLatLng = null;
+                            toLatLng = null;
+                            document.getElementById('from').value = '';
+                            document.getElementById('to').value = '';
 
-                    if (fromMarker) {
-                        map.removeLayer(fromMarker);
-                    }
-                    if (toMarker) {
-                        map.removeLayer(toMarker);
-                    }
-                })
-                .catch(error => {
-                    document.getElementById('output').innerHTML = `Erreur: ${error}`;
-                });
-        }
+                            if (fromMarker) {
+                                map.removeLayer(fromMarker);
+                            }
+                            if (toMarker) {
+                                map.removeLayer(toMarker);
+                            }
+                        }
+                    );
+                }
+            };
+
+                request.send(body);
+            }
     </script>
 </body>
 
