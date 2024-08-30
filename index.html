@@ -3,16 +3,43 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Calculateur de Temps de Trajet</title>
+    <title>Tivel</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Application de la police Poppins à l'ensemble du document */
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-weight: 600;
+            /* Utilisation du poids de police plus lourd pour les titres */
+        }
+
+        .text-green {
+            color: #005e3e;
+            /* Couleur verte */
+        }
+    </style>
 </head>
 
 <body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col items-center p-4">
 
-    <h1 class="text-4xl font-bold mb-8 text-center text-blue-800">Calculateur de Temps de Trajet</h1>
+    <h1 class="text-4xl font-bold mb-8 text-center text-blue-800">
+        <span class="text-green">Tivel</span> - Calculateur de temps de trajet
+    </h1>
 
     <div class="w-full max-w-7xl flex flex-col lg:flex-row gap-4">
         <div class="w-full lg:w-1/3 bg-white p-6 rounded-lg shadow-lg overflow-auto" style="max-height: 24rem;">
@@ -25,50 +52,70 @@
         <p id="progress-text" class="text-lg mb-2">Calcul en cours...</p>
         <progress id="progress-bar" class="progress progress-info w-full" value="0" max="100"></progress>
     </div>
-    <div class="w-full max-w-7xl bg-white p-6 rounded-lg shadow-lg mt-4">
-        <p id="duration" class="text-lg font-semibold">Durée du trajet: --</p>
-        <p id="distance" class="text-lg font-semibold">Distance: --</p>
-        <p id="co2-car" class="text-lg">Taxe carbone (Voiture): -- kg de CO2</p>
-        <p id="co2-train" class="text-lg">Taxe carbone (Train électrique): -- kg de CO2</p>
+    <div class="stats stats-vertical p-6 mt-4 w-full max-w-7xl lg:stats-horizontal shadow">
+        <div class="stat">
+            <div class="stat-title">Durée du trajet</div>
+            <div id="duration" class="stat-value"></div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-title">Distance</div>
+            <div id="distance" class="stat-value"></div>
+            <div class="stat-desc">km</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-title">Taxe carbone (Voiture)</div>
+            <div id="co2-car" class="stat-value"></div>
+            <div class="stat-desc">kg de CO2</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-title">Taxe carbone (Train électrique)</div>
+            <div id="co2-train" class="stat-value"></div>
+            <div class="stat-desc">kg de CO2</div>
+        </div>
     </div>
 
-    
 
-    <div class="collapse w-full max-w-7xl bg-blue-100 rounded-lg shadow-lg mt-8 cursor-pointer">
+
+    <div class="collapse w-full max-w-7xl bg-white rounded-lg shadow-lg mt-8">
         <input type="checkbox" class="peer" />
-        <div class="collapse-title text-2xl font-semibold text-gray-800 bg-blue-300 peer-checked:bg-blue-400">
-            <i class="fas fa-info-circle mr-2"></i> Guide d'Utilisation
+        <div
+            class="collapse-title text-2xl font-semibold text-gray-800 bg-blue-500 text-white peer-checked:bg-blue-600 flex items-center">
+            <i class="fas fa-info-circle mr-3"></i> Guide d'Utilisation
         </div>
-        <div class="collapse-content bg-blue-50 p-4 text-gray-700">
-            <h3 class="text-xl font-semibold mt-4">Étape 1 : Sélectionner les lieux</h3>
-            <p><strong>Départ :</strong> Cliquez sur la carte à l'endroit où vous souhaitez commencer votre trajet. Un
-                marqueur sera placé à cet endroit.</p>
-            <p><strong>Destination :</strong> Cliquez ensuite sur la carte à l'endroit où vous souhaitez vous rendre. Un
-                autre marqueur sera placé à cet endroit.</p>
+        <div class="collapse-content bg-blue-50 p-6 text-gray-800">
+            <h3 class="text-xl font-bold mt-4">Étape 1 : Sélectionner les lieux</h3>
+            <p class="mt-2"><strong>Départ :</strong> Cliquez sur la carte à l'endroit où vous souhaitez commencer votre
+                trajet. Un marqueur sera placé à cet endroit.</p>
+            <p class="mt-2"><strong>Destination :</strong> Cliquez ensuite sur la carte à l'endroit où vous souhaitez
+                vous rendre. Un autre marqueur sera placé à cet endroit.</p>
 
-            <h3 class="text-xl font-semibold mt-4">Étape 2 : Calculer le trajet</h3>
-            <p><strong>Calculer le temps de trajet :</strong> Cliquez sur le bouton <strong>"Calculer le temps de
-                    trajet"</strong> pour commencer le calcul de l'itinéraire. Une barre de progression apparaîtra pour
-                indiquer que le calcul est en cours.</p>
+            <h3 class="text-xl font-bold mt-6">Étape 2 : Calculer le trajet</h3>
+            <p class="mt-2"><strong>Calculer le temps de trajet :</strong> Une fois le marqueur de destination placé, le
+                calcul de l'itinéraire se lance automatiquement. Une barre de progression apparaîtra pour indiquer que
+                le calcul est en cours.</p>
 
-            <h3 class="text-xl font-semibold mt-4">Étape 3 : Affichage des résultats</h3>
-            <p><strong>Informations sur le trajet :</strong> Une fois le calcul terminé, le temps de trajet estimé et la
-                distance seront affichés à gauche de la carte. Vous trouverez également un résumé détaillé de
-                l'itinéraire, avec des instructions étape par étape.</p>
-            <p><strong>Visualisation sur la carte :</strong> L'itinéraire sera tracé en bleu sur la carte pour vous
-                aider à visualiser le chemin à suivre.</p>
-            <p><strong>Réinitialisation :</strong> Les champs de saisie et les marqueurs seront automatiquement
-                réinitialisés après chaque calcul pour vous permettre de planifier un nouveau trajet facilement.</p>
+            <h3 class="text-xl font-bold mt-6">Étape 3 : Affichage des résultats</h3>
+            <p class="mt-2"><strong>Informations sur le trajet :</strong> Une fois le calcul terminé, le temps de trajet
+                estimé et la distance seront affichés à gauche de la carte. Vous trouverez également un résumé détaillé
+                de l'itinéraire, avec des instructions étape par étape.</p>
+            <p class="mt-2"><strong>Visualisation sur la carte :</strong> L'itinéraire sera tracé en bleu sur la carte
+                pour vous aider à visualiser le chemin à suivre.</p>
+            <p class="mt-2"><strong>Réinitialisation :</strong> Les champs de saisie et les marqueurs seront
+                automatiquement réinitialisés après chaque calcul pour vous permettre de planifier un nouveau trajet
+                facilement.</p>
 
-            <h3 class="text-xl font-semibold mt-4">Conseils</h3>
-            <p><strong>Assurez-vous de sélectionner à la fois un lieu de départ et un lieu de destination avant de
-                    cliquer sur le bouton pour calculer le trajet.</strong></p>
-            <p><strong>Si une adresse ne peut pas être déterminée, les coordonnées GPS seront utilisées comme
-                    alternative.</strong></p>
-            <p>En cas d'affichage de l'erreur <strong>"TypeError: data.routes is undefined"</strong>, essayez sur une
-                plus courte distance.</p>
-            <p>Si vous avez des questions ou rencontrez des problèmes, n'hésitez pas à nous contacter. Bonne utilisation
-                !</p>
+            <h3 class="text-xl font-bold mt-6">Conseils</h3>
+            <p class="mt-2"><strong>Assurez-vous de sélectionner à la fois un lieu de départ et un lieu de destination
+                    avant de cliquer sur le bouton pour calculer le trajet.</strong></p>
+            <p class="mt-2"><strong>Si une adresse ne peut pas être déterminée, les coordonnées GPS seront utilisées
+                    comme alternative.</strong> <i>Uniquement pour la France !</i></p>
+            <p class="mt-2">En cas d'affichage de l'erreur <strong>"TypeError: data.routes is undefined"</strong>,
+                essayez sur une plus courte distance.</p>
+            <p class="mt-2">Si vous avez des questions ou rencontrez des problèmes, n'hésitez pas à nous contacter.
+                Bonne utilisation !</p>
         </div>
     </div>
 
@@ -216,10 +263,10 @@
                                             directions += `</div>`;
                                             document.getElementById('output').innerHTML = directions;
 
-                                            document.getElementById('duration').textContent = `Durée du trajet: ${formattedDuration}`;
-                                            document.getElementById('distance').textContent = `Distance: ${distanceInKm} km`;
-                                            document.getElementById('co2-car').textContent = `Taxe carbone (Voiture): ${CO2_car_total} kg de CO2`;
-                                            document.getElementById('co2-train').textContent = `Taxe carbone (Train électrique): ${CO2_train_total} kg de CO2`;
+                                            document.getElementById('duration').textContent = `${formattedDuration}`;
+                                            document.getElementById('distance').textContent = `${distanceInKm}`;
+                                            document.getElementById('co2-car').textContent = `${CO2_car_total}`;
+                                            document.getElementById('co2-train').textContent = `${CO2_train_total}`;
 
                                             const urlroute = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${fromLatLng.lng},${fromLatLng.lat}&end=${toLatLng.lng},${toLatLng.lat}`;
                                             fetch(urlroute)
@@ -238,7 +285,7 @@
                                                 });
                                         });
                                 });
-                                document.getElementById('progress-container').classList.add('hidden');
+                            document.getElementById('progress-container').classList.add('hidden');
                         }
                     })
                     .catch(error => {
